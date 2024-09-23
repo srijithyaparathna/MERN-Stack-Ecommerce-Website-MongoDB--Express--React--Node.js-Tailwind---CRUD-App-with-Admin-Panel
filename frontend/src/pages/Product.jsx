@@ -7,13 +7,15 @@ import ProductDescription from "../components/ProductDescription";
 import RelatedProducts from "../components/RelatedProduct";
 
 const Product = () => {
-  const { all_products } = useContext(ShopContext); // Access products from context
+  const { allProducts } = useContext(ShopContext); // Corrected context key
   const { productId } = useParams(); // Get productId from the URL
-  
-  // console.log("All products:", all_products); // Check products in context
-  //console.log("Product ID from URL:", productId); // Check if productId is correct
-  
-  const product = all_products?.find((e) => e.id === Number(productId)); // Add null check for all_products
+
+  // Ensure allProducts is defined and valid
+  if (!allProducts) {
+    return <div>Loading...</div>; // Show loading state
+  }
+
+  const product = allProducts.find((e) => e.id === Number(productId)); // Find product by ID
 
   if (!product) {
     console.log("Product not found"); // Debugging if product is not found
@@ -21,14 +23,12 @@ const Product = () => {
   }
 
   return (
-    <section className="max_padd_container py-28 " >
+    <section className="max_padd_container py-28">
       <div>
-        <h1>Product</h1>
         <ProductHd product={product} /> {/* Pass product data to ProductHd */}
         <ProductDisplay product={product} />
         <ProductDescription product={product} />
-        <RelatedProducts /> 
-
+        <RelatedProducts />
       </div>
     </section>
   );

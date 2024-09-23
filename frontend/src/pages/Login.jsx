@@ -24,7 +24,7 @@ const Login = () => {
     console.log("Signup function executed", formData);
 
     try {
-      const response = await fetch('http://localhost:4000/signup', {
+      const response = await fetch('http://localhost:5000/signup', {
         method: "POST",
         headers: {
           Accept: 'application/json',
@@ -52,7 +52,7 @@ const Login = () => {
     console.log("Login function executed", formData);
 
     try {
-      const response = await fetch('http://localhost:4000/login', {
+      const response = await fetch('http://localhost:5000/login', {
         method: "POST",
         headers: {
           Accept: 'application/json',

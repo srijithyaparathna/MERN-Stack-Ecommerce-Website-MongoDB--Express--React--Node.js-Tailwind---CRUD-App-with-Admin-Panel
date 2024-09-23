@@ -5,7 +5,7 @@ const Popular = () => {
   const [popularProducts, setPopularProducts] = useState([]); // State to store popular products
 
   useEffect(() => {
-    fetch("http://localhost:4000/popularproducts")
+    fetch("http://localhost:5000/popularproducts")
       .then((response) => response.json())
       .then((data) => setPopularProducts(data)) // Set the fetched data
       .catch((error) => console.error("Error fetching popular products:", error)); // Add error handling

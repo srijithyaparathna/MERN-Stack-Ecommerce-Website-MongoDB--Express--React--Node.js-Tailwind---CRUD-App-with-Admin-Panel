@@ -7,7 +7,7 @@ const Admin = () => {
   return (
     <div className="lg:flex">
       <Sidebar />
-      <div  >
+      <div className="w-full">
         <Routes>
           <Route path='addproduct' element={<AddProduct />} />
           <Route path='listproduct' element={<ListProduct />} />

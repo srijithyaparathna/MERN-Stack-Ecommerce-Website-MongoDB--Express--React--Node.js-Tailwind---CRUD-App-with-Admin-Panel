@@ -18,67 +18,82 @@ const ShopContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(getDefaultCart());
   const [allProducts, setAllProducts] = useState(initialProducts);
 
+  // Fetch products and cart on mount
   useEffect(() => {
-    // Fetch all products
-    fetch("http://localhost:4000/allproducts")
-        .then((response) => response.json())
-        .then((data) => setAllProducts(data))  // Fixed case
-        .catch((error) => console.error("Error fetching products:", error));
+    let isMounted = true; // Flag to handle component unmount during async operations
 
-    // Check for auth token and fetch cart items
-    const authToken = localStorage.getItem('auth-token');
+    // Fetch all products
+    fetch("http://localhost:5000/allproducts")
+      .then((response) => response.json())
+      .then((data) => {
+        if (isMounted) setAllProducts(data);
+      })
+      .catch((error) => console.error("Error fetching products:", error));
+
+    // Check for auth token and fetch cart items if token exists
+    const authToken = localStorage.getItem("auth-token");
     if (authToken) {
-        fetch('http://localhost:4000/getcart', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'auth-token': authToken,  // Fixed key
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}) // Sending an empty body
+      fetch("http://localhost:5000/getcart", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "auth-token": authToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // Sending an empty body
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (isMounted) setCartItems(data);
         })
-            .then((response) => response.json())
-            .then((data) => setCartItems(data))  // Fixed setCartItems
-            .catch((error) => console.error("Error fetching cart:", error));
+        .catch((error) => console.error("Error fetching cart:", error));
     }
-}, []); // Empty dependency array ensures it runs only once on component mount
+
+    // Cleanup function to avoid setting state on unmounted component
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array ensures it runs only once on component mount
 
   const addToCart = (itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
 
-    if (localStorage.getItem('auth-token')) {
-        fetch("http://localhost:4000/addtocart", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'auth-token': localStorage.getItem('auth-token'), // Fixed quotes
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ itemId: itemId }),
-        })
+    if (localStorage.getItem("auth-token")) {
+      fetch("http://localhost:5000/addtocart", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "auth-token": localStorage.getItem("auth-token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ itemId }),
+      })
         .then((response) => response.json())
         .then((data) => console.log(data))
-        .catch((error) => console.error('Error:', error)); // Added error handling
+        .catch((error) => console.error("Error:", error));
     }
-};
+  };
 
-  // Function to remove an item from the cart
   const removeFromCart = (itemId) => {
-    setCartItems((prev) => ({ ...prev, [itemId]: Math.max(prev[itemId] - 1, 0) }));
-    if (localStorage.getItem('auth-token')) {
-      fetch("http://localhost:4000/removefromcart", {
-          method: 'POST',
-          headers: {
-              'Accept': 'application/json',
-              'auth-token': localStorage.getItem('auth-token'), // Fixed quotes
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ itemId: itemId }),
+    setCartItems((prev) => ({
+      ...prev,
+      [itemId]: Math.max(prev[itemId] - 1, 0),
+    }));
+
+    if (localStorage.getItem("auth-token")) {
+      fetch("http://localhost:5000/removefromcart", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "auth-token": localStorage.getItem("auth-token"),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ itemId }),
       })
-      .then((response) => response.json())
-      .then((data) => console.log(data))
-      .catch((error) => console.error('Error:', error)); // Added error handling
-  }
+        .then((response) => response.json())
+        .then((data) => console.log(data))
+        .catch((error) => console.error("Error:", error));
+    }
   };
 
   // Function to calculate total cart amount
@@ -86,7 +101,9 @@ const ShopContextProvider = ({ children }) => {
     let totalAmount = 0;
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
-        let itemInfo = allProducts.find((product) => product.id === Number(item));  // Fixed allProducts reference
+        let itemInfo = allProducts.find(
+          (product) => product.id === Number(item)
+        );
         if (itemInfo) {
           totalAmount += itemInfo.new_price * cartItems[item];
         }
@@ -108,12 +125,12 @@ const ShopContextProvider = ({ children }) => {
 
   // Provide all context values to child components
   const contextValue = {
-    getTotalCartItems,   // Get total items in cart
-    getTotalCartAmount,  // Get total amount in cart
-    allProducts,         // Products list - fixed
-    cartItems,           // Current cart items
-    addToCart,           // Add to cart function
-    removeFromCart,      // Remove from cart function
+    getTotalCartItems,
+    getTotalCartAmount,
+    allProducts,
+    cartItems,
+    addToCart,
+    removeFromCart,
   };
 
   return (
